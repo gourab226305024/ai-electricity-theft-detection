@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,86 +8,613 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        *{margin:0;padding:0;box-sizing:border-box}
-        :root{--primary:#6366f1;--primary-dark:#4f46e5;--secondary:#8b5cf6;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;--bg-primary:#0f172a;--bg-secondary:#1e293b;--text-primary:#f1f5f9;--text-secondary:#cbd5e1;--text-muted:#94a3b8;--border:#334155;--shadow:rgba(0,0,0,0.3)}
-        body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:var(--text-primary);min-height:100vh;padding:0;overflow-x:hidden}
-        .app-container{display:flex;min-height:100vh}
-        .sidebar{width:280px;background:rgba(30,41,59,0.6);backdrop-filter:blur(20px);border-right:1px solid var(--border);padding:2rem 1.5rem;display:flex;flex-direction:column;gap:2rem}
-        .logo{display:flex;align-items:center;gap:.75rem;padding:.5rem 0}
-        .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--primary),var(--secondary));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px}
-        .logo-text{font-size:1.25rem;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-        .nav-section{display:flex;flex-direction:column;gap:.5rem}
-        .nav-title{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);padding:.5rem 1rem}
-        .nav-item{padding:.75rem 1rem;border-radius:8px;color:var(--text-secondary);cursor:pointer;transition:all .2s ease;font-size:.875rem;font-weight:500}
-        .nav-item:hover{background:rgba(99,102,241,0.1);color:var(--primary)}
-        .nav-item.active{background:rgba(99,102,241,0.15);color:var(--primary);border-left:3px solid var(--primary)}
-        .main-content{flex:1;padding:2rem;overflow-y:auto}
-        .header{margin-bottom:2rem;display:flex;justify-content:space-between;align-items:flex-start}
-        .header-info h1{font-size:2rem;font-weight:700;margin-bottom:.5rem;background:linear-gradient(135deg,#f1f5f9,#cbd5e1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-        .header-info p{color:var(--text-muted);font-size:.95rem}
-        .header-actions{display:flex;gap:1rem;align-items:center}
-        .status-pill{padding:.5rem 1rem;border-radius:20px;font-size:.813rem;font-weight:600;display:flex;align-items:center;gap:.5rem}
-        .status-pill.connected{background:rgba(16,185,129,0.15);color:var(--success);border:1px solid rgba(16,185,129,0.3)}
-        .status-pill.disconnected{background:rgba(239,68,68,0.15);color:var(--danger);border:1px solid rgba(239,68,68,0.3)}
-        .status-dot{width:8px;height:8px;border-radius:50%;background:currentColor;animation:pulse 2s ease-in-out infinite}
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-        .btn{padding:.625rem 1.25rem;border-radius:8px;font-size:.875rem;font-weight:600;cursor:pointer;transition:all .2s ease;border:none;display:flex;align-items:center;gap:.5rem}
-        .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text-secondary)}
-        .btn-outline:hover{background:rgba(255,255,255,0.05);border-color:var(--primary)}
-        .btn-secondary{background:rgba(99,102,241,0.1);color:var(--primary);border:1px solid rgba(99,102,241,0.3)}
-        .btn-secondary:hover{background:rgba(99,102,241,0.2);transform:translateY(-1px)}
-        .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:1.5rem;margin-bottom:1.5rem}
-        .col-12{grid-column:span 12}.col-8{grid-column:span 8}.col-6{grid-column:span 6}.col-4{grid-column:span 4}.col-3{grid-column:span 3}
-        .card{background:rgba(30,41,59,0.5);backdrop-filter:blur(20px);border-radius:16px;padding:1.5rem;border:1px solid var(--border);transition:all .3s ease}
-        .card:hover{border-color:rgba(99,102,241,0.3);box-shadow:0 8px 24px var(--shadow)}
-        .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
-        .card-title{font-size:1rem;font-weight:600;color:var(--text-primary)}
-        .card-subtitle{font-size:.813rem;color:var(--text-muted);margin-top:.25rem}
-        .stat-card{background:rgba(30,41,59,0.5);backdrop-filter:blur(20px);border-radius:16px;padding:1.5rem;border:1px solid var(--border);transition:all .3s ease}
-        .stat-card:hover{transform:translateY(-2px);border-color:rgba(99,102,241,0.3)}
-        .stat-label{font-size:.813rem;color:var(--text-muted);font-weight:500;margin-bottom:.5rem}
-        .stat-value{font-size:2rem;font-weight:700;color:var(--text-primary);margin-bottom:.25rem}
-        .stat-change{font-size:.75rem;font-weight:600}
-        .stat-change.positive{color:var(--success)}
-        .stat-change.negative{color:var(--danger)}
-        .meter-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
-        .meter-item{padding:1rem;background:rgba(15,23,42,0.5);border-radius:10px;border-left:3px solid var(--primary)}
-        .meter-item-label{font-size:.75rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
-        .meter-item-value{font-size:1.125rem;font-weight:600;color:var(--text-primary)}
-        .control-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
-        .control-btn{padding:1.25rem;border-radius:12px;border:2px solid var(--border);background:rgba(15,23,42,0.5);color:var(--text-primary);font-size:.938rem;font-weight:600;cursor:pointer;transition:all .3s ease;display:flex;align-items:center;justify-content:center;gap:.75rem}
-        .control-btn.normal{border-color:var(--success)}
-        .control-btn.normal:hover{background:rgba(16,185,129,0.1);border-color:var(--success);transform:translateY(-2px);box-shadow:0 4px 12px rgba(16,185,129,0.2)}
-        .control-btn.theft{border-color:var(--danger)}
-        .control-btn.theft:hover{background:rgba(239,68,68,0.1);border-color:var(--danger);transform:translateY(-2px);box-shadow:0 4px 12px rgba(239,68,68,0.2)}
-        .detection-panel{display:flex;flex-direction:column;gap:1rem}
-        .detection-item{padding:1rem;background:rgba(15,23,42,0.5);border-radius:10px;display:flex;justify-content:space-between;align-items:center}
-        .detection-label{font-size:.875rem;color:var(--text-muted);font-weight:500}
-        .detection-value{font-size:1.25rem;font-weight:700;color:var(--text-primary)}
-        .risk-badge{padding:.5rem 1rem;border-radius:20px;font-size:.813rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
-        .risk-badge.low{background:rgba(16,185,129,0.15);color:var(--success);border:1px solid rgba(16,185,129,0.3)}
-        .risk-badge.medium{background:rgba(245,158,11,0.15);color:var(--warning);border:1px solid rgba(245,158,11,0.3)}
-        .risk-badge.high{background:rgba(239,68,68,0.15);color:var(--danger);border:1px solid rgba(239,68,68,0.3)}
-        .reason-box{margin-top:1rem;padding:1rem;background:rgba(15,23,42,0.7);border-radius:10px;border-left:4px solid var(--primary);font-size:.875rem;line-height:1.6;color:var(--text-secondary)}
-        .knob-container{display:flex;gap:2rem;align-items:center}
-        .knob-visual{width:160px;height:160px;border-radius:50%;background:conic-gradient(from 0deg,var(--primary) 0%,var(--secondary) 100%);display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 8px 24px rgba(99,102,241,0.3)}
-        .knob-visual::before{content:'';width:140px;height:140px;border-radius:50%;background:rgba(30,41,59,0.95);position:absolute}
-        .knob-pointer{width:4px;height:60px;background:linear-gradient(to top,var(--danger),white);border-radius:2px;position:absolute;top:10px;transform-origin:center 70px;transition:transform .5s cubic-bezier(0.4,0,0.2,1);z-index:10}
-        .knob-value{position:absolute;font-size:2rem;font-weight:700;color:var(--text-primary);z-index:11}
-        .knob-stats{flex:1;display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
-        .knob-stat{padding:1rem;background:rgba(15,23,42,0.5);border-radius:10px;border-left:3px solid var(--secondary)}
-        .knob-stat-label{font-size:.75rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
-        .knob-stat-value{font-size:1.125rem;font-weight:700;color:var(--text-primary)}
-        .chart-wrapper{position:relative;width:100%;height:400px}
-        .chart-info{margin-top:1rem;font-size:.813rem;color:var(--text-muted);text-align:center}
-        @media (max-width:1200px){.col-8,.col-4,.col-6{grid-column:span 12}.col-3{grid-column:span 6}}
-        @media (max-width:768px){.sidebar{position:fixed;left:-280px;z-index:100;transition:left .3s ease}.main-content{padding:1rem}.header{flex-direction:column;gap:1rem}.col-3{grid-column:span 12}.control-grid,.meter-grid{grid-template-columns:1fr}.knob-container{flex-direction:column}.knob-stats{grid-template-columns:1fr;width:100%}}
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --shadow: rgba(0, 0, 0, 0.3)
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 0;
+            overflow-x: hidden
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh
+        }
+
+        .sidebar {
+            width: 280px;
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            padding: .5rem 0
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .nav-section {
+            display: flex;
+            flex-direction: column;
+            gap: .5rem
+        }
+
+        .nav-title {
+            font-size: .75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: var(--text-muted);
+            padding: .5rem 1rem
+        }
+
+        .nav-item {
+            padding: .75rem 1rem;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all .2s ease;
+            font-size: .875rem;
+            font-weight: 500
+        }
+
+        .nav-item:hover {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary)
+        }
+
+        .nav-item.active {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--primary);
+            border-left: 3px solid var(--primary)
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto
+        }
+
+        .header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start
+        }
+
+        .header-info h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: .5rem;
+            background: linear-gradient(135deg, #f1f5f9, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .header-info p {
+            color: var(--text-muted);
+            font-size: .95rem
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center
+        }
+
+        .status-pill {
+            padding: .5rem 1rem;
+            border-radius: 20px;
+            font-size: .813rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: .5rem
+        }
+
+        .status-pill.connected {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3)
+        }
+
+        .status-pill.disconnected {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3)
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s ease-in-out infinite
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .5
+            }
+        }
+
+        .btn {
+            padding: .625rem 1.25rem;
+            border-radius: 8px;
+            font-size: .875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: .5rem
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary)
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--primary)
+        }
+
+        .btn-secondary {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            border: 1px solid rgba(99, 102, 241, 0.3)
+        }
+
+        .btn-secondary:hover {
+            background: rgba(99, 102, 241, 0.2);
+            transform: translateY(-1px)
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1.5rem
+        }
+
+        .col-12 {
+            grid-column: span 12
+        }
+
+        .col-8 {
+            grid-column: span 8
+        }
+
+        .col-6 {
+            grid-column: span 6
+        }
+
+        .col-4 {
+            grid-column: span 4
+        }
+
+        .col-3 {
+            grid-column: span 3
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: all .3s ease
+        }
+
+        .card:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 8px 24px var(--shadow)
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary)
+        }
+
+        .card-subtitle {
+            font-size: .813rem;
+            color: var(--text-muted);
+            margin-top: .25rem
+        }
+
+        .stat-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: all .3s ease
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(99, 102, 241, 0.3)
+        }
+
+        .stat-label {
+            font-size: .813rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: .5rem
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: .25rem
+        }
+
+        .stat-change {
+            font-size: .75rem;
+            font-weight: 600
+        }
+
+        .stat-change.positive {
+            color: var(--success)
+        }
+
+        .stat-change.negative {
+            color: var(--danger)
+        }
+
+        .meter-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem
+        }
+
+        .meter-item {
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 10px;
+            border-left: 3px solid var(--primary)
+        }
+
+        .meter-item-label {
+            font-size: .75rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-bottom: .5rem
+        }
+
+        .meter-item-value {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary)
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem
+        }
+
+        .control-btn {
+            padding: 1.25rem;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            background: rgba(15, 23, 42, 0.5);
+            color: var(--text-primary);
+            font-size: .938rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .75rem
+        }
+
+        .control-btn.normal {
+            border-color: var(--success)
+        }
+
+        .control-btn.normal:hover {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--success);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2)
+        }
+
+        .control-btn.theft {
+            border-color: var(--danger)
+        }
+
+        .control-btn.theft:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--danger);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2)
+        }
+
+        .detection-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem
+        }
+
+        .detection-item {
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .detection-label {
+            font-size: .875rem;
+            color: var(--text-muted);
+            font-weight: 500
+        }
+
+        .detection-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary)
+        }
+
+        .risk-badge {
+            padding: .5rem 1rem;
+            border-radius: 20px;
+            font-size: .813rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em
+        }
+
+        .risk-badge.low {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3)
+        }
+
+        .risk-badge.medium {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3)
+        }
+
+        .risk-badge.high {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3)
+        }
+
+        .reason-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+            font-size: .875rem;
+            line-height: 1.6;
+            color: var(--text-secondary)
+        }
+
+        .knob-container {
+            display: flex;
+            gap: 2rem;
+            align-items: center
+        }
+
+        .knob-visual {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, var(--primary) 0%, var(--secondary) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3)
+        }
+
+        .knob-visual::before {
+            content: '';
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: rgba(30, 41, 59, 0.95);
+            position: absolute
+        }
+
+        .knob-pointer {
+            width: 4px;
+            height: 60px;
+            background: linear-gradient(to top, var(--danger), white);
+            border-radius: 2px;
+            position: absolute;
+            top: 10px;
+            transform-origin: center 70px;
+            transition: transform .5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10
+        }
+
+        .knob-value {
+            position: absolute;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            z-index: 11
+        }
+
+        .knob-stats {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem
+        }
+
+        .knob-stat {
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 10px;
+            border-left: 3px solid var(--secondary)
+        }
+
+        .knob-stat-label {
+            font-size: .75rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-bottom: .5rem
+        }
+
+        .knob-stat-value {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary)
+        }
+
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 400px
+        }
+
+        .chart-info {
+            margin-top: 1rem;
+            font-size: .813rem;
+            color: var(--text-muted);
+            text-align: center
+        }
+
+        @media (max-width:1200px) {
+
+            .col-8,
+            .col-4,
+            .col-6 {
+                grid-column: span 12
+            }
+
+            .col-3 {
+                grid-column: span 6
+            }
+        }
+
+        @media (max-width:768px) {
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                z-index: 100;
+                transition: left .3s ease
+            }
+
+            .main-content {
+                padding: 1rem
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem
+            }
+
+            .col-3 {
+                grid-column: span 12
+            }
+
+            .control-grid,
+            .meter-grid {
+                grid-template-columns: 1fr
+            }
+
+            .knob-container {
+                flex-direction: column
+            }
+
+            .knob-stats {
+                grid-template-columns: 1fr;
+                width: 100%
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="app-container">
         <aside class="sidebar">
-            <div class="logo"><div class="logo-icon">⚡</div><div class="logo-text">SmartMeter</div></div>
+            <div class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">SmartMeter</div>
+            </div>
             <nav class="nav-section">
                 <div class="nav-title">Main</div>
                 <div class="nav-item active">Dashboard</div>
@@ -107,29 +635,149 @@
                     <p>Real-time consumption monitoring and anomaly detection system</p>
                 </div>
                 <div class="header-actions">
-                    <div class="status-pill connected" id="connectionStatus"><span class="status-dot"></span><span>Checking...</span></div>
+                    <div class="status-pill connected" id="connectionStatus"><span
+                            class="status-dot"></span><span>Checking...</span></div>
                 </div>
             </header>
             <div class="grid">
-                <div class="col-3"><div class="stat-card"><div class="stat-label">Total Readings</div><div class="stat-value" id="totalReadings">0</div><div class="stat-change positive">Live</div></div></div>
-                <div class="col-3"><div class="stat-card"><div class="stat-label">Avg Consumption</div><div class="stat-value" id="avgConsumption">0</div><div class="stat-change">kWh</div></div></div>
-                <div class="col-3"><div class="stat-card"><div class="stat-label">Peak Usage</div><div class="stat-value" id="peakConsumption">0</div><div class="stat-change">kWh</div></div></div>
-                <div class="col-3"><div class="stat-card"><div class="stat-label">Anomalies</div><div class="stat-value" id="anomalyCount" style="color:var(--danger)">0</div><div class="stat-change negative">Detected</div></div></div>
+                <div class="col-3">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Readings</div>
+                        <div class="stat-value" id="totalReadings">0</div>
+                        <div class="stat-change positive">Live</div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="stat-card">
+                        <div class="stat-label">Avg Consumption</div>
+                        <div class="stat-value" id="avgConsumption">0</div>
+                        <div class="stat-change">kWh</div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="stat-card">
+                        <div class="stat-label">Peak Usage</div>
+                        <div class="stat-value" id="peakConsumption">0</div>
+                        <div class="stat-change">kWh</div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="stat-card">
+                        <div class="stat-label">Anomalies</div>
+                        <div class="stat-value" id="anomalyCount" style="color:var(--danger)">0</div>
+                        <div class="stat-change negative">Detected</div>
+                    </div>
+                </div>
             </div>
             <div class="grid">
-                <div class="col-8"><div class="card"><div class="card-header"><div><div class="card-title">Live Consumption & Risk Analysis</div><div class="card-subtitle">Real-time monitoring with AI-powered detection</div></div></div><div class="chart-wrapper"><canvas id="consumptionChart"></canvas></div><div class="chart-info" id="chartInfo">Waiting for data...</div></div></div>
-                <div class="col-4">
-                    <div class="card"><div class="card-header"><div class="card-title">Meter Information</div></div><div class="meter-grid"><div class="meter-item"><div class="meter-item-label">Meter ID</div><div class="meter-item-value" id="meterId">SM-LIVE-001</div></div><div class="meter-item"><div class="meter-item-label">Area</div><div class="meter-item-value" id="meterArea">Main Grid</div></div><div class="meter-item"><div class="meter-item-label">Tariff Type</div><div class="meter-item-value" id="tariffType">Commercial</div></div><div class="meter-item"><div class="meter-item-label">Status</div><div class="meter-item-value" id="systemStatus">Active</div></div></div></div>
-                    <div class="card" style="margin-top:1.5rem"><div class="card-header"><div class="card-title">Detection Status</div></div><div class="detection-panel"><div class="detection-item"><div class="detection-label">State</div><div class="detection-value" id="consumptionState">--</div></div><div class="detection-item"><div class="detection-label">Risk Score</div><div class="detection-value" id="riskScore">--</div></div><div class="detection-item"><div class="detection-label">Risk Level</div><div class="risk-badge low" id="riskLevel">--</div></div></div><div class="reason-box" id="reasonText">Click a scenario button to start detection...</div></div>
+                <div class="col-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Live Consumption & Risk Analysis</div>
+                                <div class="card-subtitle">Real-time monitoring with AI-powered detection</div>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper"><canvas id="consumptionChart"></canvas></div>
+                        <div class="chart-info" id="chartInfo">Waiting for data...</div>
+                    </div>
                 </div>
-                <div class="col-6"><div class="card"><div class="card-header"><div class="card-title">Scenario Controls</div></div><div class="control-grid"><button class="control-btn normal" id="btnNormal">Normal Usage</button><button class="control-btn theft" id="btnTheft">Theft Scenario</button></div><div class="control-grid" style="margin-top:1rem"><button class="btn btn-secondary" id="btnRefresh" style="width:100%">Refresh Data</button><button class="btn btn-outline" id="btnExport" style="width:100%">Export CSV</button></div></div></div>
-                <div class="col-6"><div class="card"><div class="card-header"><div class="card-title">Potentiometer Control</div></div><div class="knob-container"><div class="knob-visual"><div class="knob-pointer" id="knobPointer"></div><div class="knob-value" id="knobValue">0</div></div><div class="knob-stats"><div class="knob-stat"><div class="knob-stat-label">Raw Value</div><div class="knob-stat-value" id="knobRaw">0/1023</div></div><div class="knob-stat"><div class="knob-stat-label">Consumption</div><div class="knob-stat-value" id="knobConsumption">0.00 kWh</div></div><div class="knob-stat"><div class="knob-stat-label">Position</div><div class="knob-stat-value" id="knobPosition">0%</div></div><div class="knob-stat"><div class="knob-stat-label">Uptime</div><div class="knob-stat-value" id="systemUptime">0h 0m 0s</div></div></div></div></div></div>
+                <div class="col-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Meter Information</div>
+                        </div>
+                        <div class="meter-grid">
+                            <div class="meter-item">
+                                <div class="meter-item-label">Meter ID</div>
+                                <div class="meter-item-value" id="meterId">SM-LIVE-001</div>
+                            </div>
+                            <div class="meter-item">
+                                <div class="meter-item-label">Area</div>
+                                <div class="meter-item-value" id="meterArea">Main Grid</div>
+                            </div>
+                            <div class="meter-item">
+                                <div class="meter-item-label">Tariff Type</div>
+                                <div class="meter-item-value" id="tariffType">Commercial</div>
+                            </div>
+                            <div class="meter-item">
+                                <div class="meter-item-label">Status</div>
+                                <div class="meter-item-value" id="systemStatus">Active</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top:1.5rem">
+                        <div class="card-header">
+                            <div class="card-title">Detection Status</div>
+                        </div>
+                        <div class="detection-panel">
+                            <div class="detection-item">
+                                <div class="detection-label">State</div>
+                                <div class="detection-value" id="consumptionState">--</div>
+                            </div>
+                            <div class="detection-item">
+                                <div class="detection-label">Risk Score</div>
+                                <div class="detection-value" id="riskScore">--</div>
+                            </div>
+                            <div class="detection-item">
+                                <div class="detection-label">Risk Level</div>
+                                <div class="risk-badge low" id="riskLevel">--</div>
+                            </div>
+                        </div>
+                        <div class="reason-box" id="reasonText">Click a scenario button to start detection...</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Scenario Controls</div>
+                        </div>
+                        <div class="control-grid"><button class="control-btn normal" id="btnNormal">Normal
+                                Usage</button><button class="control-btn theft" id="btnTheft">Theft Scenario</button>
+                        </div>
+                        <div class="control-grid" style="margin-top:1rem"><button class="btn btn-secondary"
+                                id="btnRefresh" style="width:100%">Refresh Data</button><button class="btn btn-outline"
+                                id="btnExport" style="width:100%">Export CSV</button></div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Potentiometer Control</div>
+                        </div>
+                        <div class="knob-container">
+                            <div class="knob-visual">
+                                <div class="knob-pointer" id="knobPointer"></div>
+                                <div class="knob-value" id="knobValue">0</div>
+                            </div>
+                            <div class="knob-stats">
+                                <div class="knob-stat">
+                                    <div class="knob-stat-label">Raw Value</div>
+                                    <div class="knob-stat-value" id="knobRaw">0/1023</div>
+                                </div>
+                                <div class="knob-stat">
+                                    <div class="knob-stat-label">Consumption</div>
+                                    <div class="knob-stat-value" id="knobConsumption">0.00 kWh</div>
+                                </div>
+                                <div class="knob-stat">
+                                    <div class="knob-stat-label">Position</div>
+                                    <div class="knob-stat-value" id="knobPosition">0%</div>
+                                </div>
+                                <div class="knob-stat">
+                                    <div class="knob-stat-label">Uptime</div>
+                                    <div class="knob-stat-value" id="systemUptime">0h 0m 0s</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
-const API_BASE_URL='http://127.0.0.1:8000';const API_ENDPOINTS={generate:`${API_BASE_URL}/generate`,detect:`${API_BASE_URL}/detect`,root:`${API_BASE_URL}/`};let chart=null,currentMode='normal',detectionHistory=[],autoRefreshInterval=null,statsData={totalReadings:0,averageConsumption:0,peakConsumption:0,anomaliesDetected:0,uptime:0};document.addEventListener('DOMContentLoaded',function(){console.log('Dashboard initialized');testBackendConnection();startUptimeCounter();document.getElementById('btnNormal').addEventListener('click',loadNormalUsage);document.getElementById('btnTheft').addEventListener('click',loadTheftScenario);document.getElementById('btnRefresh').addEventListener('click',refreshData);document.getElementById('btnExport').addEventListener('click',exportData)});function testBackendConnection(){fetch(API_ENDPOINTS.root).then(r=>r.ok?(console.log('✅ Backend connected'),updateConnectionStatus(!0)):(console.error('❌ Backend error'),updateConnectionStatus(!1))).catch(e=>(console.error('❌ Connection failed:',e),updateConnectionStatus(!1)))}function startUptimeCounter(){setInterval(()=>{statsData.uptime++;updateStats()},1000)}async function loadNormalUsage(){try{console.log('NORMAL mode');const r=await fetch(`${API_ENDPOINTS.generate}/normal`);if(!r.ok)throw new Error(`Server error: ${r.status}`);const data=await r.json();console.log('Mode switched:',data);currentMode='normal';detectionHistory=[];clearChart();startAutoRefresh();await runDetection();updateConnectionStatus(!0)}catch(e){console.error('Error:',e);showErrorMessage('Failed: '+e.message);updateConnectionStatus(!1)}}async function loadTheftScenario(){try{console.log('THEFT mode');const r=await fetch(`${API_ENDPOINTS.generate}/theft`);if(!r.ok)throw new Error(`Server error: ${r.status}`);const data=await r.json();console.log('Mode switched:',data);currentMode='theft';detectionHistory=[];clearChart();startAutoRefresh();await runDetection();updateConnectionStatus(!0)}catch(e){console.error('Error:',e);showErrorMessage('Failed: '+e.message);updateConnectionStatus(!1)}}async function runDetection(){try{console.log('Running detection...');const r=await fetch(API_ENDPOINTS.detect);if(!r.ok)throw new Error(`Server error: ${r.status}`);const d=await r.json();console.log('Detection:',d);detectionHistory.push({timestamp:new Date().toLocaleTimeString(),consumption:d.consumption,risk_score:d.risk_score,anomaly:d.anomaly,reason:d.reason});detectionHistory.length>30&&detectionHistory.shift();updateStatisticsFromHistory();updateChart(detectionHistory);updateStatus(d);updateConnectionStatus(!0)}catch(e){console.error('Detection error:',e);showErrorMessage('Detection failed: '+e.message);updateConnectionStatus(!1)}}function updateStatisticsFromHistory(){if(detectionHistory.length===0)return;const c=detectionHistory.map(h=>h.consumption);statsData.totalReadings=detectionHistory.length;statsData.averageConsumption=(c.reduce((a,b)=>a+b,0)/c.length).toFixed(2);statsData.peakConsumption=Math.max(...c).toFixed(2);statsData.anomaliesDetected=detectionHistory.filter(h=>h.anomaly===1).length}function startAutoRefresh(){autoRefreshInterval&&clearInterval(autoRefreshInterval);autoRefreshInterval=setInterval(()=>{runDetection()},2000);console.log('Auto-refresh started')}async function refreshData(){console.log('Manual refresh');await runDetection()}function exportData(){if(detectionHistory.length===0){alert('No data to export');return}const csv='Timestamp,Consumption (kWh),Risk Score (%),Anomaly\n'+detectionHistory.map(h=>`${h.timestamp},${h.consumption},${h.risk_score},${h.anomaly}`).join('\n');const blob=new Blob([csv],{type:'text/csv'}),url=window.URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`meter-data-${new Date().toISOString().slice(0,10)}.csv`;a.click();window.URL.revokeObjectURL(url);console.log('Data exported')}function updateChart(history){const ctx=document.getElementById('consumptionChart').getContext('2d'),labels=history.map(i=>i.timestamp),cValues=history.map(i=>i.consumption),rValues=history.map(i=>i.risk_score),hasAnomaly=history.some(i=>i.anomaly===1),borderColor=hasAnomaly?'#ef4444':'#6366f1',bgColor=hasAnomaly?'rgba(239,68,68,0.1)':'rgba(99,102,241,0.1)';chart&&chart.destroy();chart=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[{label:'Consumption (kWh)',data:cValues,borderColor:borderColor,backgroundColor:bgColor,borderWidth:2.5,fill:!0,tension:0.4,pointRadius:4,pointBackgroundColor:borderColor,pointBorderColor:'rgba(255,255,255,0.8)',pointBorderWidth:2,pointHoverRadius:6,yAxisID:'y'},{label:'Risk Score (%)',data:rValues,borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.1)',borderWidth:2,borderDash:[5,5],fill:!1,tension:0.4,pointRadius:3,pointBackgroundColor:'#f59e0b',pointBorderColor:'rgba(255,255,255,0.8)',pointBorderWidth:2,pointHoverRadius:5,yAxisID:'y1'}]},options:{responsive:!0,maintainAspectRatio:!1,interaction:{mode:'index',intersect:!1},plugins:{legend:{display:!0,position:'top',labels:{usePointStyle:!0,padding:16,font:{size:13,weight:'500',family:'Inter'},color:'#cbd5e1'}},tooltip:{backgroundColor:'rgba(15,23,42,0.95)',padding:12,titleFont:{size:13,weight:'600',family:'Inter'},bodyFont:{size:12,family:'Inter'},borderColor:'#6366f1',borderWidth:1}},scales:{y:{type:'linear',display:!0,position:'left',title:{display:!0,text:'Consumption (kWh)',color:'#6366f1',font:{weight:'600',family:'Inter'}},ticks:{font:{size:12,family:'Inter'},color:'#94a3b8'},grid:{color:'rgba(51,65,85,0.3)',drawBorder:!1}},y1:{type:'linear',display:!0,position:'right',min:0,max:100,title:{display:!0,text:'Risk Score (%)',color:'#f59e0b',font:{weight:'600',family:'Inter'}},ticks:{font:{size:12,family:'Inter'},color:'#94a3b8',callback:function(value){return value+'%'}},grid:{drawOnChartArea:!1,drawBorder:!1}},x:{ticks:{font:{size:11,family:'Inter'},color:'#94a3b8',maxRotation:45,minRotation:0},grid:{display:!1,drawBorder:!1}}}}});document.getElementById('chartInfo').textContent=`Live data: ${labels.length} readings | Mode: ${currentMode.toUpperCase()}`}function clearChart(){chart&&(chart.destroy(),chart=null)}function updateStatus(d){const consumption=d.consumption||0,riskScore=d.risk_score||0,anomaly=d.anomaly||0,reason=d.reason||'No data',state=anomaly===1?'Suspicious':'Normal',riskLevel=getRiskLevel(riskScore);document.getElementById('consumptionState').textContent=state;document.getElementById('riskScore').textContent=riskScore+'%';const badge=document.getElementById('riskLevel');badge.textContent=riskLevel.toUpperCase();badge.className=`risk-badge ${riskLevel}`;document.getElementById('reasonText').textContent=reason;updateKnobIndicator(consumption)}function updateStats(){document.getElementById('totalReadings').textContent=statsData.totalReadings;document.getElementById('avgConsumption').textContent=statsData.averageConsumption;document.getElementById('peakConsumption').textContent=statsData.peakConsumption;document.getElementById('anomalyCount').textContent=statsData.anomaliesDetected;document.getElementById('systemUptime').textContent=formatUptime(statsData.uptime)}function formatUptime(seconds){const h=Math.floor(seconds/3600),m=Math.floor((seconds%3600)/60),s=seconds%60;return`${h}h ${m}m ${s}s`}function getRiskLevel(score){return score<33?'low':score<66?'medium':'high'}function updateConnectionStatus(isConnected){const badge=document.getElementById('connectionStatus'),txt=badge.querySelector('span:last-child');if(isConnected){badge.className='status-pill connected';txt.textContent='Connected'}else{badge.className='status-pill disconnected';txt.textContent='Disconnected'}}function showErrorMessage(msg){console.error(msg);document.getElementById('reasonText').textContent=`⚠ ${msg}`}function updateKnobIndicator(consumption){const raw=Math.round((consumption/50.0)*1023),pct=Math.round((raw/1023)*100),deg=(raw/1023)*360;document.getElementById('knobPointer').style.transform=`rotate(${deg}deg)`;document.getElementById('knobValue').textContent=raw;document.getElementById('knobRaw').textContent=`${raw}/1023`;document.getElementById('knobConsumption').textContent=consumption.toFixed(2)+' kWh';document.getElementById('knobPosition').textContent=pct+'%'}
+        const API_BASE_URL = 'http://127.0.0.1:8000'; const API_ENDPOINTS = { generate: `${API_BASE_URL}/generate`, detect: `${API_BASE_URL}/detect`, root: `${API_BASE_URL}/` }; let chart = null, currentMode = 'normal', detectionHistory = [], autoRefreshInterval = null, statsData = { totalReadings: 0, averageConsumption: 0, peakConsumption: 0, anomaliesDetected: 0, uptime: 0 }; document.addEventListener('DOMContentLoaded', function () { console.log('Dashboard initialized'); testBackendConnection(); startUptimeCounter(); document.getElementById('btnNormal').addEventListener('click', loadNormalUsage); document.getElementById('btnTheft').addEventListener('click', loadTheftScenario); document.getElementById('btnRefresh').addEventListener('click', refreshData); document.getElementById('btnExport').addEventListener('click', exportData) }); function testBackendConnection() { fetch(API_ENDPOINTS.root).then(r => r.ok ? (console.log('✅ Backend connected'), updateConnectionStatus(!0)) : (console.error('❌ Backend error'), updateConnectionStatus(!1))).catch(e => (console.error('❌ Connection failed:', e), updateConnectionStatus(!1))) } function startUptimeCounter() { setInterval(() => { statsData.uptime++; updateStats() }, 1000) } async function loadNormalUsage() { try { console.log('NORMAL mode'); const r = await fetch(`${API_ENDPOINTS.generate}/normal`); if (!r.ok) throw new Error(`Server error: ${r.status}`); const data = await r.json(); console.log('Mode switched:', data); currentMode = 'normal'; detectionHistory = []; clearChart(); startAutoRefresh(); await runDetection(); updateConnectionStatus(!0) } catch (e) { console.error('Error:', e); showErrorMessage('Failed: ' + e.message); updateConnectionStatus(!1) } } async function loadTheftScenario() { try { console.log('THEFT mode'); const r = await fetch(`${API_ENDPOINTS.generate}/theft`); if (!r.ok) throw new Error(`Server error: ${r.status}`); const data = await r.json(); console.log('Mode switched:', data); currentMode = 'theft'; detectionHistory = []; clearChart(); startAutoRefresh(); await runDetection(); updateConnectionStatus(!0) } catch (e) { console.error('Error:', e); showErrorMessage('Failed: ' + e.message); updateConnectionStatus(!1) } } async function runDetection() { try { console.log('Running detection...'); const r = await fetch(API_ENDPOINTS.detect); if (!r.ok) throw new Error(`Server error: ${r.status}`); const d = await r.json(); console.log('Detection:', d); detectionHistory.push({ timestamp: new Date().toLocaleTimeString(), consumption: d.consumption, risk_score: d.risk_score, anomaly: d.anomaly, reason: d.reason }); detectionHistory.length > 50 && detectionHistory.shift(); updateStatisticsFromHistory(); updateChart(detectionHistory); updateStatus(d); updateConnectionStatus(!0) } catch (e) { console.error('Detection error:', e); showErrorMessage('Detection failed: ' + e.message); updateConnectionStatus(!1) } } function updateStatisticsFromHistory() { if (detectionHistory.length === 0) return; const c = detectionHistory.map(h => h.consumption); statsData.totalReadings = detectionHistory.length; statsData.averageConsumption = (c.reduce((a, b) => a + b, 0) / c.length).toFixed(2); statsData.peakConsumption = Math.max(...c).toFixed(2); statsData.anomaliesDetected = detectionHistory.filter(h => h.anomaly === 1).length } function startAutoRefresh() { autoRefreshInterval && clearInterval(autoRefreshInterval); autoRefreshInterval = setInterval(() => { runDetection() }, 200); console.log('Auto-refresh started') } async function refreshData() { console.log('Manual refresh'); await runDetection() } function exportData() { if (detectionHistory.length === 0) { alert('No data to export'); return } const csv = 'Timestamp,Consumption (kWh),Risk Score (%),Anomaly\n' + detectionHistory.map(h => `${h.timestamp},${h.consumption},${h.risk_score},${h.anomaly}`).join('\n'); const blob = new Blob([csv], { type: 'text/csv' }), url = window.URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = `meter-data-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); window.URL.revokeObjectURL(url); console.log('Data exported') } function updateChart(history) { const ctx = document.getElementById('consumptionChart').getContext('2d'), labels = history.map(i => i.timestamp), cValues = history.map(i => i.consumption), rValues = history.map(i => i.risk_score), hasAnomaly = history.some(i => i.anomaly === 1), borderColor = hasAnomaly ? '#ef4444' : '#6366f1', bgColor = hasAnomaly ? 'rgba(239,68,68,0.1)' : 'rgba(99,102,241,0.1)'; chart && chart.destroy(); chart = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: 'Consumption (kWh)', data: cValues, borderColor: borderColor, backgroundColor: bgColor, borderWidth: 2.5, fill: !0, tension: 0.4, pointRadius: 0, pointBackgroundColor: borderColor, pointBorderColor: 'rgba(255,255,255,0.8)', pointBorderWidth: 2, pointHoverRadius: 6, yAxisID: 'y' }, { label: 'Risk Score (%)', data: rValues, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)', borderWidth: 2, borderDash: [5, 5], fill: !1, tension: 0.4, pointRadius: 0, pointBackgroundColor: '#f59e0b', pointBorderColor: 'rgba(255,255,255,0.8)', pointBorderWidth: 2, pointHoverRadius: 5, yAxisID: 'y1' }] }, options: { responsive: !0, maintainAspectRatio: !1, interaction: { mode: 'index', intersect: !1 }, plugins: { legend: { display: !0, position: 'top', labels: { usePointStyle: !0, padding: 16, font: { size: 13, weight: '500', family: 'Inter' }, color: '#cbd5e1' } }, tooltip: { backgroundColor: 'rgba(15,23,42,0.95)', padding: 12, titleFont: { size: 13, weight: '600', family: 'Inter' }, bodyFont: { size: 12, family: 'Inter' }, borderColor: '#6366f1', borderWidth: 1 } }, scales: { y: { type: 'linear', display: !0, position: 'left', title: { display: !0, text: 'Consumption (kWh)', color: '#6366f1', font: { weight: '600', family: 'Inter' } }, ticks: { font: { size: 12, family: 'Inter' }, color: '#94a3b8' }, grid: { color: 'rgba(51,65,85,0.3)', drawBorder: !1 } }, y1: { type: 'linear', display: !0, position: 'right', min: 0, max: 100, title: { display: !0, text: 'Risk Score (%)', color: '#f59e0b', font: { weight: '600', family: 'Inter' } }, ticks: { font: { size: 12, family: 'Inter' }, color: '#94a3b8', callback: function (value) { return value + '%' } }, grid: { drawOnChartArea: !1, drawBorder: !1 } }, x: { ticks: { font: { size: 11, family: 'Inter' }, color: '#94a3b8', maxRotation: 45, minRotation: 0 }, grid: { display: !1, drawBorder: !1 } } } } }); document.getElementById('chartInfo').textContent = `Live data: ${labels.length} readings | Mode: ${currentMode.toUpperCase()}` } function clearChart() { chart && (chart.destroy(), chart = null) } function updateStatus(d) { const consumption = d.consumption || 0, riskScore = d.risk_score || 0, anomaly = d.anomaly || 0, reason = d.reason || 'No data', state = anomaly === 1 ? 'Suspicious' : 'Normal', riskLevel = getRiskLevel(riskScore); document.getElementById('consumptionState').textContent = state; document.getElementById('riskScore').textContent = riskScore + '%'; const badge = document.getElementById('riskLevel'); badge.textContent = riskLevel.toUpperCase(); badge.className = `risk-badge ${riskLevel}`; document.getElementById('reasonText').textContent = reason; updateKnobIndicator(consumption) } function updateStats() { document.getElementById('totalReadings').textContent = statsData.totalReadings; document.getElementById('avgConsumption').textContent = statsData.averageConsumption; document.getElementById('peakConsumption').textContent = statsData.peakConsumption; document.getElementById('anomalyCount').textContent = statsData.anomaliesDetected; document.getElementById('systemUptime').textContent = formatUptime(statsData.uptime) } function formatUptime(seconds) { const h = Math.floor(seconds / 3600), m = Math.floor((seconds % 3600) / 60), s = seconds % 60; return `${h}h ${m}m ${s}s` } function getRiskLevel(score) { return score < 33 ? 'low' : score < 66 ? 'medium' : 'high' } function updateConnectionStatus(isConnected) { const badge = document.getElementById('connectionStatus'), txt = badge.querySelector('span:last-child'); if (isConnected) { badge.className = 'status-pill connected'; txt.textContent = 'Connected' } else { badge.className = 'status-pill disconnected'; txt.textContent = 'Disconnected' } } function showErrorMessage(msg) { console.error(msg); document.getElementById('reasonText').textContent = `⚠ ${msg}` } function updateKnobIndicator(consumption) { const raw = Math.round((consumption / 50.0) * 1023), pct = Math.round((raw / 1023) * 100), deg = (raw / 1023) * 360; document.getElementById('knobPointer').style.transform = `rotate(${deg}deg)`; document.getElementById('knobValue').textContent = raw; document.getElementById('knobRaw').textContent = `${raw}/1023`; document.getElementById('knobConsumption').textContent = consumption.toFixed(2) + ' kWh'; document.getElementById('knobPosition').textContent = pct + '%' }
     </script>
 </body>
+
 </html>

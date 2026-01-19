@@ -36,36 +36,53 @@ def init_arduino():
         print("Falling back to simulation mode")
         return False
 
+from collections import deque
+
+# Moving average buffer
+reading_buffer = deque(maxlen=5)
+
 def read_potentiometer():
     """
-    Read potentiometer value from Arduino
+    Read potentiometer value from Arduino with low latency and smoothing
     Returns consumption value (0-50 kWh)
     """
     global arduino_connection
     
     if HARDWARE_TYPE == "simulation":
-        return np.random.uniform(0, 50)
+        # Simulate slight noise
+        val = np.random.uniform(0, 50)
+        reading_buffer.append(val)
+        return round(sum(reading_buffer) / len(reading_buffer), 2)
     
     try:
         if arduino_connection:
-            # Wait a bit for data
-            time.sleep(0.05)
+            if arduino_connection.in_waiting > 0:
+                # Read ALL bytes to clear buffer and get only the absolute latest data
+                # This fixes the "lag" where code processes old buffered data
+                raw_data = arduino_connection.read_all().decode(errors='ignore')
+                lines = raw_data.strip().split('\n')
+                
+                # Get the last valid line
+                for line in reversed(lines):
+                    line = line.strip()
+                    if line.isdigit():
+                        latest_value = int(line)
+                        
+                        # Convert to kWh
+                        consumption = (latest_value / 1023.0) * 50.0
+                        
+                        # Add to buffer for smoothing
+                        reading_buffer.append(consumption)
+                        
+                        # Return smoothed average
+                        smoothed_val = sum(reading_buffer) / len(reading_buffer)
+                        print(f"Raw: {latest_value} -> Smoothed: {smoothed_val:.2f}")
+                        return round(smoothed_val, 2)
             
-            # Read all available data, keep the latest
-            latest_value = None
-            while arduino_connection.in_waiting > 0:
-                try:
-                    raw_line = arduino_connection.readline().decode().strip()
-                    if raw_line and raw_line.isdigit():
-                        latest_value = int(raw_line)
-                except:
-                    continue
-            
-            # Use the latest value we got
-            if latest_value is not None:
-                consumption = (latest_value / 1023.0) * 50.0
-                print(f"Raw: {latest_value} → Consumption: {consumption:.2f} kWh")
-                return round(consumption, 2)
+            # If no new data, return the last known average (or 0 if empty)
+            if reading_buffer:
+                return round(sum(reading_buffer) / len(reading_buffer), 2)
+                
     except Exception as e:
         print(f"Error reading potentiometer: {e}")
     
