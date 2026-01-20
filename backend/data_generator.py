@@ -39,7 +39,7 @@ def init_arduino():
 from collections import deque
 
 # Moving average buffer
-reading_buffer = deque(maxlen=5)
+reading_buffer = deque(maxlen=10)
 
 def read_potentiometer():
     """
@@ -151,7 +151,7 @@ def generate_data(theft=False):
 # LIVE POTENTIOMETER READING (for dashboard)
 # ============================================
 
-def get_live_consumption():
+def get_live_consumption(mode="normal"):
     """
     Get current consumption from potentiometer
     Use this in your /detect endpoint for real-time readings
@@ -164,8 +164,20 @@ def get_live_consumption():
     if HARDWARE_TYPE == "arduino" and arduino_connection:
         return read_potentiometer()
     else:
-        # Return random value if in simulation
-        return round(np.random.uniform(0, 50), 2)
+        # Simulation Logic based on Mode
+        if mode == "normal":
+            # Return valid normal consumption (20-40 kWh)
+            # Use smaller variance for stability + some noise
+            base = 30.0
+            noise = np.random.normal(0, 1.5) # Standard deviation of 1.5
+            val = base + noise
+            return round(np.clip(val, 22, 38), 2)
+        else:
+            # Simulate theft/anomaly (low consumption < 20)
+            base = 10.0
+            noise = np.random.normal(0, 2.0)
+            val = base + noise
+            return round(np.clip(val, 2, 18), 2)
 
 # ============================================
 # TEST FUNCTION

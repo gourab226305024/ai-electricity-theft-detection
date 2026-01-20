@@ -38,7 +38,7 @@ def detect():
     """
     try:
         # Get live potentiometer reading
-        live_consumption = get_live_consumption()
+        live_consumption = get_live_consumption(mode=CURRENT_MODE)
         
         # Calculate risk score based on consumption
         risk_score = calculate_risk(live_consumption)

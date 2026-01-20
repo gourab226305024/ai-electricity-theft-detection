@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Meter Analytics Platform</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="chart.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -617,166 +617,457 @@
             </div>
             <nav class="nav-section">
                 <div class="nav-title">Main</div>
-                <div class="nav-item active">Dashboard</div>
-                <div class="nav-item">Analytics</div>
-                <div class="nav-item">Reports</div>
+                <div class="nav-item active" data-target="dashboard">Dashboard</div>
+                <div class="nav-item" data-target="analytics">Analytics</div>
+                <div class="nav-item" data-target="reports">Reports</div>
             </nav>
             <nav class="nav-section">
                 <div class="nav-title">Management</div>
-                <div class="nav-item">Meters</div>
-                <div class="nav-item">Alerts</div>
-                <div class="nav-item">Settings</div>
+                <div class="nav-item" data-target="meters">Meters</div>
+                <div class="nav-item" data-target="alerts">Alerts</div>
+                <div class="nav-item" data-target="settings">Settings</div>
             </nav>
         </aside>
         <main class="main-content">
-            <header class="header">
-                <div class="header-info">
-                    <h1>Smart Meter Analytics</h1>
-                    <p>Real-time consumption monitoring and anomaly detection system</p>
-                </div>
-                <div class="header-actions">
-                    <div class="status-pill connected" id="connectionStatus"><span
-                            class="status-dot"></span><span>Checking...</span></div>
-                </div>
-            </header>
-            <div class="grid">
-                <div class="col-3">
-                    <div class="stat-card">
-                        <div class="stat-label">Total Readings</div>
-                        <div class="stat-value" id="totalReadings">0</div>
-                        <div class="stat-change positive">Live</div>
+            <!-- DASHBOARD SECTION -->
+            <div id="section-dashboard" class="content-section active">
+                <header class="header">
+                    <div class="header-info">
+                        <h1>Smart Meter Analytics</h1>
+                        <p>Real-time consumption monitoring and anomaly detection system</p>
+                    </div>
+                    <div class="header-actions">
+                        <div class="status-pill connected" id="connectionStatus"><span
+                                class="status-dot"></span><span>Checking...</span></div>
+                    </div>
+                </header>
+                <div class="grid">
+                    <div class="col-3">
+                        <div class="stat-card">
+                            <div class="stat-label">Total Readings</div>
+                            <div class="stat-value" id="totalReadings">0</div>
+                            <div class="stat-change positive">Live</div>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="stat-card">
+                            <div class="stat-label">Avg Consumption</div>
+                            <div class="stat-value" id="avgConsumption">0</div>
+                            <div class="stat-change">kWh</div>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="stat-card">
+                            <div class="stat-label">Peak Usage</div>
+                            <div class="stat-value" id="peakConsumption">0</div>
+                            <div class="stat-change">kWh</div>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="stat-card">
+                            <div class="stat-label">Anomalies</div>
+                            <div class="stat-value" id="anomalyCount" style="color:var(--danger)">0</div>
+                            <div class="stat-change negative">Detected</div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-3">
-                    <div class="stat-card">
-                        <div class="stat-label">Avg Consumption</div>
-                        <div class="stat-value" id="avgConsumption">0</div>
-                        <div class="stat-change">kWh</div>
+                <div class="grid">
+                    <div class="col-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <div>
+                                    <div class="card-title">Live Consumption & Risk Analysis</div>
+                                    <div class="card-subtitle">Real-time monitoring with AI-powered detection</div>
+                                </div>
+                            </div>
+                            <div class="chart-wrapper"><canvas id="consumptionChart"></canvas></div>
+                            <div class="chart-info" id="chartInfo">Waiting for data...</div>
+                        </div>
                     </div>
-                </div>
-                <div class="col-3">
-                    <div class="stat-card">
-                        <div class="stat-label">Peak Usage</div>
-                        <div class="stat-value" id="peakConsumption">0</div>
-                        <div class="stat-change">kWh</div>
+                    <div class="col-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">Meter Information</div>
+                            </div>
+                            <div class="meter-grid">
+                                <div class="meter-item">
+                                    <div class="meter-item-label">Meter ID</div>
+                                    <div class="meter-item-value" id="meterId">SM-LIVE-001</div>
+                                </div>
+                                <div class="meter-item">
+                                    <div class="meter-item-label">Area</div>
+                                    <div class="meter-item-value" id="meterArea">Main Grid</div>
+                                </div>
+                                <div class="meter-item">
+                                    <div class="meter-item-label">Tariff Type</div>
+                                    <div class="meter-item-value" id="tariffType">Commercial</div>
+                                </div>
+                                <div class="meter-item">
+                                    <div class="meter-item-label">Status</div>
+                                    <div class="meter-item-value" id="systemStatus">Active</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card" style="margin-top:1.5rem">
+                            <div class="card-header">
+                                <div class="card-title">Detection Status</div>
+                            </div>
+                            <div class="detection-panel">
+                                <div class="detection-item">
+                                    <div class="detection-label">State</div>
+                                    <div class="detection-value" id="consumptionState">--</div>
+                                </div>
+                                <div class="detection-item">
+                                    <div class="detection-label">Risk Score</div>
+                                    <div class="detection-value" id="riskScore">--</div>
+                                </div>
+                                <div class="detection-item">
+                                    <div class="detection-label">Risk Level</div>
+                                    <div class="risk-badge low" id="riskLevel">--</div>
+                                </div>
+                            </div>
+                            <div class="reason-box" id="reasonText">Click a scenario button to start detection...</div>
+                        </div>
                     </div>
-                </div>
-                <div class="col-3">
-                    <div class="stat-card">
-                        <div class="stat-label">Anomalies</div>
-                        <div class="stat-value" id="anomalyCount" style="color:var(--danger)">0</div>
-                        <div class="stat-change negative">Detected</div>
+                    <div class="col-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">Scenario Controls</div>
+                            </div>
+                            <div class="control-grid"><button class="control-btn normal" id="btnNormal">Normal
+                                    Usage</button><button class="control-btn theft" id="btnTheft">Theft
+                                    Scenario</button>
+                            </div>
+                            <div class="control-grid" style="margin-top:1rem"><button class="btn btn-secondary"
+                                    id="btnRefresh" style="width:100%">Refresh Data</button><button
+                                    class="btn btn-outline" id="btnExport" style="width:100%">Export CSV</button></div>
+                            <div style="margin-top:1rem">
+                                <button class="btn btn-outline" id="btnTestAlarm"
+                                    style="width:100%; border-color: var(--warning); color: var(--warning);">🔔 Test
+                                    Alarm Sound</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">Potentiometer Control</div>
+                            </div>
+                            <div class="knob-container">
+                                <div class="knob-visual">
+                                    <div class="knob-pointer" id="knobPointer"></div>
+                                    <div class="knob-value" id="knobValue">0</div>
+                                </div>
+                                <div class="knob-stats">
+                                    <div class="knob-stat">
+                                        <div class="knob-stat-label">Raw Value</div>
+                                        <div class="knob-stat-value" id="knobRaw">0/1023</div>
+                                    </div>
+                                    <div class="knob-stat">
+                                        <div class="knob-stat-label">Consumption</div>
+                                        <div class="knob-stat-value" id="knobConsumption">0.00 kWh</div>
+                                    </div>
+                                    <div class="knob-stat">
+                                        <div class="knob-stat-label">Position</div>
+                                        <div class="knob-stat-value" id="knobPosition">0%</div>
+                                    </div>
+                                    <div class="knob-stat">
+                                        <div class="knob-stat-label">Uptime</div>
+                                        <div class="knob-stat-value" id="systemUptime">0h 0m 0s</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="grid">
-                <div class="col-8">
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">Live Consumption & Risk Analysis</div>
-                                <div class="card-subtitle">Real-time monitoring with AI-powered detection</div>
-                            </div>
-                        </div>
-                        <div class="chart-wrapper"><canvas id="consumptionChart"></canvas></div>
-                        <div class="chart-info" id="chartInfo">Waiting for data...</div>
+
+            <!-- ANALYTICS SECTION (Placeholder) -->
+            <div id="section-analytics" class="content-section" style="display: none;">
+                <header class="header">
+                    <div class="header-info">
+                        <h1>Analytics</h1>
+                        <p>Detailed consumption trends and forecasting</p>
+                    </div>
+                </header>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Coming Soon</div>
                     </div>
                 </div>
-                <div class="col-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">Meter Information</div>
-                        </div>
-                        <div class="meter-grid">
-                            <div class="meter-item">
-                                <div class="meter-item-label">Meter ID</div>
-                                <div class="meter-item-value" id="meterId">SM-LIVE-001</div>
-                            </div>
-                            <div class="meter-item">
-                                <div class="meter-item-label">Area</div>
-                                <div class="meter-item-value" id="meterArea">Main Grid</div>
-                            </div>
-                            <div class="meter-item">
-                                <div class="meter-item-label">Tariff Type</div>
-                                <div class="meter-item-value" id="tariffType">Commercial</div>
-                            </div>
-                            <div class="meter-item">
-                                <div class="meter-item-label">Status</div>
-                                <div class="meter-item-value" id="systemStatus">Active</div>
-                            </div>
-                        </div>
+            </div>
+
+            <!-- REPORTS SECTION (Placeholder) -->
+            <div id="section-reports" class="content-section" style="display: none;">
+                <header class="header">
+                    <div class="header-info">
+                        <h1>Reports</h1>
+                        <p>Generate usage reports</p>
                     </div>
-                    <div class="card" style="margin-top:1.5rem">
-                        <div class="card-header">
-                            <div class="card-title">Detection Status</div>
-                        </div>
-                        <div class="detection-panel">
-                            <div class="detection-item">
-                                <div class="detection-label">State</div>
-                                <div class="detection-value" id="consumptionState">--</div>
-                            </div>
-                            <div class="detection-item">
-                                <div class="detection-label">Risk Score</div>
-                                <div class="detection-value" id="riskScore">--</div>
-                            </div>
-                            <div class="detection-item">
-                                <div class="detection-label">Risk Level</div>
-                                <div class="risk-badge low" id="riskLevel">--</div>
-                            </div>
-                        </div>
-                        <div class="reason-box" id="reasonText">Click a scenario button to start detection...</div>
+                </header>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Coming Soon</div>
                     </div>
                 </div>
-                <div class="col-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">Scenario Controls</div>
+            </div>
+
+            <!-- METERS SECTION -->
+            <div id="section-meters" class="content-section" style="display: none;">
+                <header class="header">
+                    <div class="header-info">
+                        <h1>Meters Management</h1>
+                        <p>Status of all connected smart meters</p>
+                    </div>
+                </header>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Registered Meters</div>
+                    </div>
+                    <div class="meter-grid">
+                        <div class="meter-item" style="border-left-color: var(--success);">
+                            <div class="meter-item-label">SM-LIVE-001</div>
+                            <div class="meter-item-value">Active</div>
+                            <small style="color:var(--text-muted)">Main Grid • Commercial</small>
                         </div>
-                        <div class="control-grid"><button class="control-btn normal" id="btnNormal">Normal
-                                Usage</button><button class="control-btn theft" id="btnTheft">Theft Scenario</button>
+                        <div class="meter-item" style="border-left-color: var(--warning);">
+                            <div class="meter-item-label">SM-RES-042</div>
+                            <div class="meter-item-value">Maintenance</div>
+                            <small style="color:var(--text-muted)">Sector 7 • Residential</small>
                         </div>
-                        <div class="control-grid" style="margin-top:1rem"><button class="btn btn-secondary"
-                                id="btnRefresh" style="width:100%">Refresh Data</button><button class="btn btn-outline"
-                                id="btnExport" style="width:100%">Export CSV</button></div>
+                        <div class="meter-item" style="border-left-color: var(--danger);">
+                            <div class="meter-item-label">SM-IND-881</div>
+                            <div class="meter-item-value">Offline</div>
+                            <small style="color:var(--text-muted)">Ind. Zone • Industrial</small>
+                        </div>
                     </div>
                 </div>
-                <div class="col-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">Potentiometer Control</div>
+            </div>
+
+            <!-- ALERTS SECTION -->
+            <div id="section-alerts" class="content-section" style="display: none;">
+                <header class="header">
+                    <div class="header-info">
+                        <h1>System Alerts</h1>
+                        <p>Recent anomaly detections and system warnings</p>
+                    </div>
+                </header>
+                <div class="detection-panel">
+                    <div class="detection-item">
+                        <div>
+                            <div class="detection-label">High Risk Detected</div>
+                            <small style="color:var(--text-muted)">2 mins ago • SM-LIVE-001</small>
                         </div>
-                        <div class="knob-container">
-                            <div class="knob-visual">
-                                <div class="knob-pointer" id="knobPointer"></div>
-                                <div class="knob-value" id="knobValue">0</div>
+                        <div class="risk-badge high">URGENT</div>
+                    </div>
+                    <div class="detection-item">
+                        <div>
+                            <div class="detection-label">Connection Lost</div>
+                            <small style="color:var(--text-muted)">1 hour ago • SM-IND-881</small>
+                        </div>
+                        <div class="risk-badge medium">WARNING</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS SECTION -->
+            <div id="section-settings" class="content-section" style="display: none;">
+                <header class="header">
+                    <div class="header-info">
+                        <h1>Settings</h1>
+                        <p>Configure detection thresholds and notifications</p>
+                    </div>
+                </header>
+                <div class="grid">
+                    <div class="col-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">Thresholds</div>
                             </div>
-                            <div class="knob-stats">
-                                <div class="knob-stat">
-                                    <div class="knob-stat-label">Raw Value</div>
-                                    <div class="knob-stat-value" id="knobRaw">0/1023</div>
-                                </div>
-                                <div class="knob-stat">
-                                    <div class="knob-stat-label">Consumption</div>
-                                    <div class="knob-stat-value" id="knobConsumption">0.00 kWh</div>
-                                </div>
-                                <div class="knob-stat">
-                                    <div class="knob-stat-label">Position</div>
-                                    <div class="knob-stat-value" id="knobPosition">0%</div>
-                                </div>
-                                <div class="knob-stat">
-                                    <div class="knob-stat-label">Uptime</div>
-                                    <div class="knob-stat-value" id="systemUptime">0h 0m 0s</div>
-                                </div>
+                            <div class="detection-item">
+                                <div class="detection-label">Anomlay Sensitivity</div>
+                                <div class="risk-badge low">High</div>
+                            </div>
+                            <div class="detection-item">
+                                <div class="detection-label">Risk Threshold</div>
+                                <div class="detection-value">70%</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
+        <!-- JS FOR TABS -->
+        <script>
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function () {
+                    // Remove active from all nav items
+                    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                    // Add active to clicked
+                    this.classList.add('active');
+
+                    // Hide all sections
+                    document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+
+                    // Show target section
+                    const targetId = 'section-' + this.getAttribute('data-target');
+                    const targetSection = document.getElementById(targetId);
+                    if (targetSection) targetSection.style.display = 'block';
+                });
+            });
+        </script>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        /* ... existing styles ... */
+        @keyframes flash-red {
+
+            0%,
+            100% {
+                background-color: rgba(30, 41, 59, 0.5);
+            }
+
+            50% {
+                background-color: rgba(239, 68, 68, 0.2);
+                border-color: #ef4444;
+            }
+        }
+
+        .alarm-active {
+            animation: flash-red 1s infinite;
+        }
+    </style>
     <script>
-        const API_BASE_URL = 'http://127.0.0.1:8000'; const API_ENDPOINTS = { generate: `${API_BASE_URL}/generate`, detect: `${API_BASE_URL}/detect`, root: `${API_BASE_URL}/` }; let chart = null, currentMode = 'normal', detectionHistory = [], autoRefreshInterval = null, statsData = { totalReadings: 0, averageConsumption: 0, peakConsumption: 0, anomaliesDetected: 0, uptime: 0 }; document.addEventListener('DOMContentLoaded', function () { console.log('Dashboard initialized'); testBackendConnection(); startUptimeCounter(); document.getElementById('btnNormal').addEventListener('click', loadNormalUsage); document.getElementById('btnTheft').addEventListener('click', loadTheftScenario); document.getElementById('btnRefresh').addEventListener('click', refreshData); document.getElementById('btnExport').addEventListener('click', exportData) }); function testBackendConnection() { fetch(API_ENDPOINTS.root).then(r => r.ok ? (console.log('✅ Backend connected'), updateConnectionStatus(!0)) : (console.error('❌ Backend error'), updateConnectionStatus(!1))).catch(e => (console.error('❌ Connection failed:', e), updateConnectionStatus(!1))) } function startUptimeCounter() { setInterval(() => { statsData.uptime++; updateStats() }, 1000) } async function loadNormalUsage() { try { console.log('NORMAL mode'); const r = await fetch(`${API_ENDPOINTS.generate}/normal`); if (!r.ok) throw new Error(`Server error: ${r.status}`); const data = await r.json(); console.log('Mode switched:', data); currentMode = 'normal'; detectionHistory = []; clearChart(); startAutoRefresh(); await runDetection(); updateConnectionStatus(!0) } catch (e) { console.error('Error:', e); showErrorMessage('Failed: ' + e.message); updateConnectionStatus(!1) } } async function loadTheftScenario() { try { console.log('THEFT mode'); const r = await fetch(`${API_ENDPOINTS.generate}/theft`); if (!r.ok) throw new Error(`Server error: ${r.status}`); const data = await r.json(); console.log('Mode switched:', data); currentMode = 'theft'; detectionHistory = []; clearChart(); startAutoRefresh(); await runDetection(); updateConnectionStatus(!0) } catch (e) { console.error('Error:', e); showErrorMessage('Failed: ' + e.message); updateConnectionStatus(!1) } } async function runDetection() { try { console.log('Running detection...'); const r = await fetch(API_ENDPOINTS.detect); if (!r.ok) throw new Error(`Server error: ${r.status}`); const d = await r.json(); console.log('Detection:', d); detectionHistory.push({ timestamp: new Date().toLocaleTimeString(), consumption: d.consumption, risk_score: d.risk_score, anomaly: d.anomaly, reason: d.reason }); detectionHistory.length > 50 && detectionHistory.shift(); updateStatisticsFromHistory(); updateChart(detectionHistory); updateStatus(d); updateConnectionStatus(!0) } catch (e) { console.error('Detection error:', e); showErrorMessage('Detection failed: ' + e.message); updateConnectionStatus(!1) } } function updateStatisticsFromHistory() { if (detectionHistory.length === 0) return; const c = detectionHistory.map(h => h.consumption); statsData.totalReadings = detectionHistory.length; statsData.averageConsumption = (c.reduce((a, b) => a + b, 0) / c.length).toFixed(2); statsData.peakConsumption = Math.max(...c).toFixed(2); statsData.anomaliesDetected = detectionHistory.filter(h => h.anomaly === 1).length } function startAutoRefresh() { autoRefreshInterval && clearInterval(autoRefreshInterval); autoRefreshInterval = setInterval(() => { runDetection() }, 200); console.log('Auto-refresh started') } async function refreshData() { console.log('Manual refresh'); await runDetection() } function exportData() { if (detectionHistory.length === 0) { alert('No data to export'); return } const csv = 'Timestamp,Consumption (kWh),Risk Score (%),Anomaly\n' + detectionHistory.map(h => `${h.timestamp},${h.consumption},${h.risk_score},${h.anomaly}`).join('\n'); const blob = new Blob([csv], { type: 'text/csv' }), url = window.URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = `meter-data-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); window.URL.revokeObjectURL(url); console.log('Data exported') } function updateChart(history) { const ctx = document.getElementById('consumptionChart').getContext('2d'), labels = history.map(i => i.timestamp), cValues = history.map(i => i.consumption), rValues = history.map(i => i.risk_score), hasAnomaly = history.some(i => i.anomaly === 1), borderColor = hasAnomaly ? '#ef4444' : '#6366f1', bgColor = hasAnomaly ? 'rgba(239,68,68,0.1)' : 'rgba(99,102,241,0.1)'; chart && chart.destroy(); chart = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: 'Consumption (kWh)', data: cValues, borderColor: borderColor, backgroundColor: bgColor, borderWidth: 2.5, fill: !0, tension: 0.4, pointRadius: 0, pointBackgroundColor: borderColor, pointBorderColor: 'rgba(255,255,255,0.8)', pointBorderWidth: 2, pointHoverRadius: 6, yAxisID: 'y' }, { label: 'Risk Score (%)', data: rValues, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)', borderWidth: 2, borderDash: [5, 5], fill: !1, tension: 0.4, pointRadius: 0, pointBackgroundColor: '#f59e0b', pointBorderColor: 'rgba(255,255,255,0.8)', pointBorderWidth: 2, pointHoverRadius: 5, yAxisID: 'y1' }] }, options: { responsive: !0, maintainAspectRatio: !1, interaction: { mode: 'index', intersect: !1 }, plugins: { legend: { display: !0, position: 'top', labels: { usePointStyle: !0, padding: 16, font: { size: 13, weight: '500', family: 'Inter' }, color: '#cbd5e1' } }, tooltip: { backgroundColor: 'rgba(15,23,42,0.95)', padding: 12, titleFont: { size: 13, weight: '600', family: 'Inter' }, bodyFont: { size: 12, family: 'Inter' }, borderColor: '#6366f1', borderWidth: 1 } }, scales: { y: { type: 'linear', display: !0, position: 'left', title: { display: !0, text: 'Consumption (kWh)', color: '#6366f1', font: { weight: '600', family: 'Inter' } }, ticks: { font: { size: 12, family: 'Inter' }, color: '#94a3b8' }, grid: { color: 'rgba(51,65,85,0.3)', drawBorder: !1 } }, y1: { type: 'linear', display: !0, position: 'right', min: 0, max: 100, title: { display: !0, text: 'Risk Score (%)', color: '#f59e0b', font: { weight: '600', family: 'Inter' } }, ticks: { font: { size: 12, family: 'Inter' }, color: '#94a3b8', callback: function (value) { return value + '%' } }, grid: { drawOnChartArea: !1, drawBorder: !1 } }, x: { ticks: { font: { size: 11, family: 'Inter' }, color: '#94a3b8', maxRotation: 45, minRotation: 0 }, grid: { display: !1, drawBorder: !1 } } } } }); document.getElementById('chartInfo').textContent = `Live data: ${labels.length} readings | Mode: ${currentMode.toUpperCase()}` } function clearChart() { chart && (chart.destroy(), chart = null) } function updateStatus(d) { const consumption = d.consumption || 0, riskScore = d.risk_score || 0, anomaly = d.anomaly || 0, reason = d.reason || 'No data', state = anomaly === 1 ? 'Suspicious' : 'Normal', riskLevel = getRiskLevel(riskScore); document.getElementById('consumptionState').textContent = state; document.getElementById('riskScore').textContent = riskScore + '%'; const badge = document.getElementById('riskLevel'); badge.textContent = riskLevel.toUpperCase(); badge.className = `risk-badge ${riskLevel}`; document.getElementById('reasonText').textContent = reason; updateKnobIndicator(consumption) } function updateStats() { document.getElementById('totalReadings').textContent = statsData.totalReadings; document.getElementById('avgConsumption').textContent = statsData.averageConsumption; document.getElementById('peakConsumption').textContent = statsData.peakConsumption; document.getElementById('anomalyCount').textContent = statsData.anomaliesDetected; document.getElementById('systemUptime').textContent = formatUptime(statsData.uptime) } function formatUptime(seconds) { const h = Math.floor(seconds / 3600), m = Math.floor((seconds % 3600) / 60), s = seconds % 60; return `${h}h ${m}m ${s}s` } function getRiskLevel(score) { return score < 33 ? 'low' : score < 66 ? 'medium' : 'high' } function updateConnectionStatus(isConnected) { const badge = document.getElementById('connectionStatus'), txt = badge.querySelector('span:last-child'); if (isConnected) { badge.className = 'status-pill connected'; txt.textContent = 'Connected' } else { badge.className = 'status-pill disconnected'; txt.textContent = 'Disconnected' } } function showErrorMessage(msg) { console.error(msg); document.getElementById('reasonText').textContent = `⚠ ${msg}` } function updateKnobIndicator(consumption) { const raw = Math.round((consumption / 50.0) * 1023), pct = Math.round((raw / 1023) * 100), deg = (raw / 1023) * 360; document.getElementById('knobPointer').style.transform = `rotate(${deg}deg)`; document.getElementById('knobValue').textContent = raw; document.getElementById('knobRaw').textContent = `${raw}/1023`; document.getElementById('knobConsumption').textContent = consumption.toFixed(2) + ' kWh'; document.getElementById('knobPosition').textContent = pct + '%' }
+        const API_BASE_URL = 'http://127.0.0.1:8000'; const API_ENDPOINTS = { generate: `${API_BASE_URL}/generate`, detect: `${API_BASE_URL}/detect`, root: `${API_BASE_URL}/` }; let chart = null, currentMode = 'normal', detectionHistory = [], autoRefreshInterval = null, statsData = { totalReadings: 0, averageConsumption: 0, peakConsumption: 0, anomaliesDetected: 0, uptime: 0 };
+
+        // Alarm System
+        let audioCtx = null;
+        let nextAlarmTime = 0;
+        const ALARM_COOLDOWN = 1000; // ms
+
+        function initAudio() {
+            if (!audioCtx) {
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    console.log('🔊 AudioContext created');
+                } catch (e) {
+                    console.error('❌ AudioContext support missing', e);
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume().then(() => console.log('🔊 AudioContext resumed'));
+            }
+        }
+
+        function playAlarmSound() {
+            if (!audioCtx) initAudio();
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const now = Date.now();
+            if (now < nextAlarmTime) return;
+            nextAlarmTime = now + ALARM_COOLDOWN;
+
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime); // High pitch A5
+                osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.5); // Drop to A4
+
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+                console.log('🔔 Alarm triggered');
+            } catch (e) {
+                console.error('❌ Error playing sound:', e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('Dashboard initialized');
+            testBackendConnection();
+            startUptimeCounter();
+
+            const btnNormal = document.getElementById('btnNormal');
+            const btnTheft = document.getElementById('btnTheft');
+            const btnTest = document.getElementById('btnTestAlarm');
+
+            btnNormal.addEventListener('click', loadNormalUsage);
+
+            // Explicitly unlock audio on Theft button click
+            btnTheft.addEventListener('click', function () {
+                initAudio();
+                loadTheftScenario();
+            });
+
+            document.getElementById('btnRefresh').addEventListener('click', refreshData);
+            document.getElementById('btnExport').addEventListener('click', exportData);
+
+            // Test button
+            if (btnTest) {
+                btnTest.addEventListener('click', function () {
+                    initAudio();
+                    playAlarmSound();
+                });
+            }
+
+            // Initialize audio on first interaction to respect browser policies
+            document.body.addEventListener('click', initAudio, { once: true });
+        });
+
+        function testBackendConnection() { fetch(API_ENDPOINTS.root).then(r => r.ok ? (console.log('✅ Backend connected'), updateConnectionStatus(!0)) : (console.error('❌ Backend error'), updateConnectionStatus(!1))).catch(e => (console.error('❌ Connection failed:', e), updateConnectionStatus(!1))) } function startUptimeCounter() { setInterval(() => { statsData.uptime++; updateStats() }, 1000) } async function loadNormalUsage() { try { console.log('NORMAL mode'); const r = await fetch(`${API_ENDPOINTS.generate}/normal`); if (!r.ok) throw new Error(`Server error: ${r.status}`); const data = await r.json(); console.log('Mode switched:', data); currentMode = 'normal'; detectionHistory = []; clearChart(); startAutoRefresh(); await runDetection(); updateConnectionStatus(!0) } catch (e) { console.error('Error:', e); showErrorMessage('Failed: ' + e.message); updateConnectionStatus(!1) } } async function loadTheftScenario() { try { console.log('THEFT mode'); const r = await fetch(`${API_ENDPOINTS.generate}/theft`); if (!r.ok) throw new Error(`Server error: ${r.status}`); const data = await r.json(); console.log('Mode switched:', data); currentMode = 'theft'; detectionHistory = []; clearChart(); startAutoRefresh(); await runDetection(); updateConnectionStatus(!0) } catch (e) { console.error('Error:', e); showErrorMessage('Failed: ' + e.message); updateConnectionStatus(!1) } } async function runDetection() {
+            try {
+                console.log('Running detection...'); const r = await fetch(API_ENDPOINTS.detect); if (!r.ok) throw new Error(`Server error: ${r.status}`); const d = await r.json(); console.log('Detection:', d);
+                detectionHistory.push({
+                    timestamp: new Date().toLocaleTimeString(),
+                    full_timestamp: new Date().toLocaleString(),
+                    consumption: d.consumption,
+                    risk_score: d.risk_score,
+                    anomaly: d.anomaly,
+                    reason: d.reason
+                }); detectionHistory.length > 50 && detectionHistory.shift(); updateStatisticsFromHistory(); updateChart(detectionHistory); updateStatus(d); updateConnectionStatus(!0)
+            } catch (e) { console.error('Detection error:', e); showErrorMessage('Detection failed: ' + e.message); updateConnectionStatus(!1) }
+        } function updateStatisticsFromHistory() { if (detectionHistory.length === 0) return; const c = detectionHistory.map(h => h.consumption); statsData.totalReadings = detectionHistory.length; statsData.averageConsumption = (c.reduce((a, b) => a + b, 0) / c.length).toFixed(2); statsData.peakConsumption = Math.max(...c).toFixed(2); statsData.anomaliesDetected = detectionHistory.filter(h => h.anomaly === 1).length } function startAutoRefresh() { autoRefreshInterval && clearInterval(autoRefreshInterval); autoRefreshInterval = setInterval(() => { runDetection() }, 200); console.log('Auto-refresh started') } async function refreshData() { console.log('Manual refresh'); await runDetection() } function exportData() {
+            if (detectionHistory.length === 0) { alert('No data to export'); return }
+            const csv = 'Timestamp,Consumption (kWh),Risk Score (%),Anomaly\n' + detectionHistory.map(h => `${h.full_timestamp || h.timestamp},${h.consumption},${h.risk_score},${h.anomaly}`).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' }), url = window.URL.createObjectURL(blob), a = document.createElement('a');
+            a.href = url;
+            a.download = `meter-data-${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            console.log('Data exported')
+        } function updateChart(history) { const ctx = document.getElementById('consumptionChart').getContext('2d'), labels = history.map(i => i.timestamp), cValues = history.map(i => i.consumption), rValues = history.map(i => i.risk_score), hasAnomaly = history.some(i => i.anomaly === 1), borderColor = hasAnomaly ? '#ef4444' : '#6366f1', bgColor = hasAnomaly ? 'rgba(239,68,68,0.1)' : 'rgba(99,102,241,0.1)'; chart && chart.destroy(); chart = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: 'Consumption (kWh)', data: cValues, borderColor: borderColor, backgroundColor: bgColor, borderWidth: 2.5, fill: !0, tension: 0.4, pointRadius: 0, pointBackgroundColor: borderColor, pointBorderColor: 'rgba(255,255,255,0.8)', pointBorderWidth: 2, pointHoverRadius: 6, yAxisID: 'y' }, { label: 'Risk Score (%)', data: rValues, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)', borderWidth: 2, borderDash: [5, 5], fill: !1, tension: 0.4, pointRadius: 0, pointBackgroundColor: '#f59e0b', pointBorderColor: 'rgba(255,255,255,0.8)', pointBorderWidth: 2, pointHoverRadius: 5, yAxisID: 'y1' }] }, options: { responsive: !0, maintainAspectRatio: !1, interaction: { mode: 'index', intersect: !1 }, plugins: { legend: { display: !0, position: 'top', labels: { usePointStyle: !0, padding: 16, font: { size: 13, weight: '500', family: 'Inter' }, color: '#cbd5e1' } }, tooltip: { backgroundColor: 'rgba(15,23,42,0.95)', padding: 12, titleFont: { size: 13, weight: '600', family: 'Inter' }, bodyFont: { size: 12, family: 'Inter' }, borderColor: '#6366f1', borderWidth: 1 } }, scales: { y: { type: 'linear', display: !0, position: 'left', title: { display: !0, text: 'Consumption (kWh)', color: '#6366f1', font: { weight: '600', family: 'Inter' } }, ticks: { font: { size: 12, family: 'Inter' }, color: '#94a3b8' }, grid: { color: 'rgba(51,65,85,0.3)', drawBorder: !1 } }, y1: { type: 'linear', display: !0, position: 'right', min: 0, max: 100, title: { display: !0, text: 'Risk Score (%)', color: '#f59e0b', font: { weight: '600', family: 'Inter' } }, ticks: { font: { size: 12, family: 'Inter' }, color: '#94a3b8', callback: function (value) { return value + '%' } }, grid: { drawOnChartArea: !1, drawBorder: !1 } }, x: { ticks: { font: { size: 11, family: 'Inter' }, color: '#94a3b8', maxRotation: 45, minRotation: 0 }, grid: { display: !1, drawBorder: !1 } } } } }); document.getElementById('chartInfo').textContent = `Live data: ${labels.length} readings | Mode: ${currentMode.toUpperCase()}` } function clearChart() { chart && (chart.destroy(), chart = null) }
+
+        function updateStatus(d) {
+            const consumption = d.consumption || 0, riskScore = d.risk_score || 0, anomaly = d.anomaly || 0, reason = d.reason || 'No data', state = anomaly === 1 ? 'Suspicious' : 'Normal', riskLevel = getRiskLevel(riskScore);
+
+            document.getElementById('consumptionState').textContent = state;
+            document.getElementById('riskScore').textContent = riskScore + '%';
+            const badge = document.getElementById('riskLevel');
+            badge.textContent = riskLevel.toUpperCase();
+            badge.className = `risk-badge ${riskLevel}`;
+
+            // Alarm Trigger
+            const detectionCard = document.querySelector('.detection-panel').closest('.card');
+            if (riskScore >= 70) {
+                if (detectionCard) detectionCard.classList.add('alarm-active');
+                playAlarmSound();
+            } else {
+                if (detectionCard) detectionCard.classList.remove('alarm-active');
+            }
+
+            document.getElementById('reasonText').textContent = reason;
+            updateKnobIndicator(consumption)
+        }
+
+        function updateStats() { document.getElementById('totalReadings').textContent = statsData.totalReadings; document.getElementById('avgConsumption').textContent = statsData.averageConsumption; document.getElementById('peakConsumption').textContent = statsData.peakConsumption; document.getElementById('anomalyCount').textContent = statsData.anomaliesDetected; document.getElementById('systemUptime').textContent = formatUptime(statsData.uptime) } function formatUptime(seconds) { const h = Math.floor(seconds / 3600), m = Math.floor((seconds % 3600) / 60), s = seconds % 60; return `${h}h ${m}m ${s}s` } function getRiskLevel(score) { return score < 33 ? 'low' : score < 66 ? 'medium' : 'high' } function updateConnectionStatus(isConnected) { const badge = document.getElementById('connectionStatus'), txt = badge.querySelector('span:last-child'); if (isConnected) { badge.className = 'status-pill connected'; txt.textContent = 'Connected' } else { badge.className = 'status-pill disconnected'; txt.textContent = 'Disconnected' } } function showErrorMessage(msg) { console.error(msg); document.getElementById('reasonText').textContent = `⚠ ${msg}` } function updateKnobIndicator(consumption) { const raw = Math.round((consumption / 50.0) * 1023), pct = Math.round((raw / 1023) * 100), deg = (raw / 1023) * 360; document.getElementById('knobPointer').style.transform = `rotate(${deg}deg)`; document.getElementById('knobValue').textContent = raw; document.getElementById('knobRaw').textContent = `${raw}/1023`; document.getElementById('knobConsumption').textContent = consumption.toFixed(2) + ' kWh'; document.getElementById('knobPosition').textContent = pct + '%' }
     </script>
 </body>
 
